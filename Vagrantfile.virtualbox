@@ -1,0 +1,40 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2" 
+
+# Stack Setting
+
+stack_name = File.dirname(File.expand_path(__FILE__))
+
+layers = {}
+
+layers[:app] = [
+  { :name => :app1, :ip => '192.168.90.101', :cpus => 1, :mem => 1024 }
+]
+
+# Vagrant
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/trusty64"
+
+  layers.each do |layer, instances|
+    instances.each do |i| 
+      config.vm.define i[:name] do |config|
+        config.vm.hostname = i[:name].to_s
+        config.vm.network "private_network", ip: i[:ip]
+        config.vm.provider "virtualbox" do |vm|
+          vm.customize ["modifyvm", :id, "--cpus", i[:cpus]]
+          vm.customize ["modifyvm", :id, "--memory", i[:mem]]
+        end
+        config.vm.provision "chef_solo" do |chef|
+          chef.cookbooks_path = "./cookbooks"
+          chef.roles_path = "./roles"
+          chef.run_list = [ "role[#{layer}]" ]
+        end
+
+      end 
+    end 
+  end 
+
+end

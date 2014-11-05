@@ -1,0 +1,11 @@
+{
+    "name": "app",
+    "description": "desc",
+    "default_attributes": {
+    },  
+    "run_list": [
+        "recipe[apt]"
+    ],  
+    "chef_type": "role",
+    "json_class": "Chef::Role"
+}
